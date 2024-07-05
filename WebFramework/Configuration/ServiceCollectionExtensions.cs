@@ -1,10 +1,13 @@
 ﻿using Common.Settings;
 using Data.Context;
+using Data.Contracts;
+using Data.Repositories;
 using Entittes;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WebFramework.Filters;
 
 
 namespace WebFramework.Configuration;
@@ -45,6 +48,18 @@ public static class ServiceCollectionExtensions
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+    }
+
+    public static void AddServices(this IServiceCollection services)
+    {
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUserRepository, UserRepository>();  
+    }
+
+    public static void AddAttributeServices(this IServiceCollection services)
+    {       
+        services.AddScoped<LogActionFilter>();
+        services.AddScoped<ApiResultFilterAttribute>();
     }
 
 }

@@ -34,10 +34,10 @@ public static class ModelBuilderExtensions
     /// <param name="defaultValueSql">DefaultValueSql like "NEWSEQUENTIALID()"</param>
     public static void AddDefaultValueSqlConvention(this ModelBuilder modelBuilder, string propertyName, Type propertyType, string defaultValueSql)
     {
-        foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
-            IMutableProperty property = entityType.GetProperties()
-                                                  .SingleOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))!;
+            var property = entityType.GetProperties()
+                                     .SingleOrDefault(p => p.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))!;
 
             if (property != null && property.ClrType == propertyType)
             {
@@ -63,9 +63,10 @@ public static class ModelBuilderExtensions
     /// <param name="modelBuilder"></param>
     public static void AddRestrictDeleteBehaviorConvention(this ModelBuilder modelBuilder)
     {
-        IEnumerable<IMutableForeignKey> cascadeFKs = modelBuilder.Model.GetEntityTypes()
-                                                                       .SelectMany(t => t.GetForeignKeys())
-                                                                       .Where(fk => !fk.IsOwnership && fk.DeleteBehavior == DeleteBehavior.Cascade);
+       var cascadeFKs = modelBuilder.Model.GetEntityTypes()
+                                          .SelectMany(t => t.GetForeignKeys())//اونهایی که ارتباطات دارند را پیدا میکنه
+                                          .Where(fk => !fk.IsOwnership && fk.DeleteBehavior == DeleteBehavior.Cascade);
+
         foreach (IMutableForeignKey fk in cascadeFKs)
         {
             fk.DeleteBehavior = DeleteBehavior.Restrict;
@@ -109,12 +110,12 @@ public static class ModelBuilderExtensions
     public static void RegisterAllEntities<BaseType>(this ModelBuilder modelBuilder, params Assembly[] assemblies)
     {
         IEnumerable<Type> types = assemblies
-                                    .SelectMany(a => a.GetExportedTypes())
-                                    .Where(c => c.IsClass && !c.IsAbstract && c.IsPublic && typeof(BaseType)
-                                    .IsAssignableFrom(c));
+                                    .SelectMany(a => a.GetExportedTypes()) //GetExportedTypes تایپ های عمومی را به ما برمیگردونه
+                                    .Where(c => c.IsClass && !c.IsAbstract && c.IsPublic && typeof(BaseType).IsAssignableFrom(c));
 
         foreach (Type type in types)
         {
+            //این متد  میره ست میکنه بهDbSet
             modelBuilder.Entity(type);
         }
     }

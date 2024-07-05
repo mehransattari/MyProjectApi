@@ -20,15 +20,20 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, int>
         var entitiesAssembly = typeof(IEntity).Assembly;
 
         //برای ثبت اتومات مدل ها
+        //  public DbSet<Role> Roles { get; set; }
         modelBuilder.RegisterAllEntities<IEntity>(entitiesAssembly);
 
-        // برای ثبت اتوامتیک مپ ها
+        // برای ثبت اتوامتیک مپ ها 
+        //بجای نوشتن تک تک مثل کد زیر 
+        // modelBuilder.ApplyConfiguration(new RoleConfiguration());
         modelBuilder.RegisterEntityTypeConfiguration(entitiesAssembly);
 
         //حذف مدل ها در صورت ارتباط داشتن با مدل دیگر اجازه ندهد حذف کند
         modelBuilder.AddRestrictDeleteBehaviorConvention();
 
-        //SequentialGuid
+        //هرجا از گیود استفاده کنیم بجاش سکیونشال گیود بزاریم
+        //چون سکونشال باعث میشه این گیود های تولید شده بر اساس زمان مشخص وبه شکل تصاعدی بالا برندو ایندکس بالایی دارند
+        // modelBuilder.Entity<Post>().Property(x=>x.Id).HasDefaultValueSql("NEWSEQUENTIALID()");
         modelBuilder.AddSequentialGuidForIdConvention();
 
         //جمع کردن نام های اتوماتیک مدل ها

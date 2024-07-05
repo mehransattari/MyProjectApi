@@ -10,6 +10,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext(builder.Configuration);
 
+builder.Services.AddServices();
+
+builder.Services.AddAttributeServices();
+
 var siteSettings = builder.Configuration.GetSection(nameof(SiteSettings)).Get<SiteSettings>()!;
 
 builder.Services.AddCustomIdentity(siteSettings.IdentitySettings);
