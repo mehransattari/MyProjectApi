@@ -1,5 +1,6 @@
 ﻿
 
+using Common.Exceptions;
 using Common.Utilities;
 using Data.Context;
 using Data.Contracts;
@@ -24,6 +25,10 @@ public class UserRepository : Repository<User>, IUserRepository
 
     public async Task AddAsync(User user, string password, CancellationToken cancellationToken)
     {
+        var exists = await TableNoTracking.AnyAsync(p => p.UserName == user.UserName);
+        if (exists)
+            throw new BadRequestExceptions("نام کاربری تکراری است");
+
         var passHash = SecurityHelper.GetSha256Hash(password);
         user.PasswordHash = passHash;
         await base.AddAsync(user, cancellationToken);

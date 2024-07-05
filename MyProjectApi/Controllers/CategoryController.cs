@@ -1,6 +1,8 @@
-﻿using Data.Contracts;
+﻿using Common.Exceptions;
+using Data.Contracts;
 using Entittes;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebFramework.Api;
 
 namespace MyProjectApi.Controllers;
@@ -30,6 +32,10 @@ public class CategoryController : BaseController
     [HttpPost]
     public async Task Create(Category Category, CancellationToken cancellationToken)
     {
+        var isExist =await categoryRepository.TableNoTracking.AnyAsync(x => x.Name == Category.Name);
+        if (isExist)
+            throw new BadRequestExceptions("تکراری میباشد");
+
         await categoryRepository.AddAsync(Category, cancellationToken);
     }
 

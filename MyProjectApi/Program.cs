@@ -1,5 +1,6 @@
 using Common.Settings;
 using WebFramework.Configuration;
+using WebFramework.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddCustomIdentity(siteSettings.IdentitySettings);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCustomExceptionHandler();
 
 app.UseHttpsRedirection();
 
