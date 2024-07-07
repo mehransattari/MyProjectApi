@@ -16,11 +16,13 @@ public class UserRepository : Repository<User>, IUserRepository
             
     }
 
-    public  Task<User?> GetByUserAndPass( string userName, string password, CancellationToken cancellationToken)
+    public async Task<User> GetByUserAndPass( string userName, string password, CancellationToken cancellationToken)
     {
         var passHash = SecurityHelper.GetSha256Hash(password);  
         
-        return Table.SingleOrDefaultAsync(x=>x.UserName == userName && password == passHash, cancellationToken);   
+        var result = await Table.SingleOrDefaultAsync(x=>x.UserName == userName && x.Password == passHash, cancellationToken);   
+    
+        return result;
     }
 
     public async Task AddAsync(User user, string password, CancellationToken cancellationToken)
@@ -30,8 +32,19 @@ public class UserRepository : Repository<User>, IUserRepository
             throw new BadRequestExceptions("نام کاربری تکراری است");
 
         var passHash = SecurityHelper.GetSha256Hash(password);
-        user.PasswordHash = passHash;
+        user.Password = passHash;
         await base.AddAsync(user, cancellationToken);
     }
 
+    public  Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
+    {
+        user.SecurityStamp = Guid.NewGuid();
+        return  UpdateAsync(user, cancellationToken);
+    }
+
+    public Task UpdateLastLoginDateAsync(User user, CancellationToken cancellationToken)
+    {
+        user.LastLoginDate = DateTimeOffset.Now;
+        return UpdateAsync(user, cancellationToken);
+    }
 }

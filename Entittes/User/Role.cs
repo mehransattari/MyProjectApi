@@ -6,8 +6,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Entittes;
 
 
-public class Role : IdentityRole<int> , IEntity
+public class Role :BaseEntity //IdentityRole<int> , IEntity
 {
+    public string Name { get; set; } 
+
     public string Description { get; set; } = string.Empty;
 }
 

@@ -1,7 +1,10 @@
-﻿using Data.Contracts;
+﻿using Common.Exceptions;
+using Data.Contracts;
 using Entittes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyProjectApi.Models;
+using Services.Services;
 using WebFramework.Api;
 
 namespace MyProjectApi.Controllers;
@@ -9,9 +12,13 @@ namespace MyProjectApi.Controllers;
 public class UserController : BaseController
 {
     private readonly IUserRepository userRepository;
-    public UserController(IUserRepository userRepository)
+
+    private readonly IJwtService jwtService;
+
+    public UserController(IUserRepository userRepository, IJwtService jwtService)
     {
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
     [HttpGet]
@@ -22,10 +29,31 @@ public class UserController : BaseController
     }
 
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<ApiResult<User>> Get(int id, CancellationToken cancellationToken)
     {
         var user = await userRepository.GetByIdAsync(cancellationToken, id);
+
+        if(user == null)
+        {
+            return NotFound();
+        }
+
+       await userRepository.UpdateSecurityStampAsync(user, cancellationToken);
+
         return user;
+    }
+
+    [HttpGet("[action]")]
+    [AllowAnonymous]
+    public async Task<string> Token(string userName, string password, CancellationToken cancellationToken)
+    {
+        var user =await userRepository.GetByUserAndPass(userName, password, cancellationToken);
+        if (user == null)
+            throw new BadRequestExceptions("نام کاربری یا رمز عبور اشتباه می باشد");
+
+        var jwt =await jwtService.GenerateAsync(user);
+        return jwt;
     }
 
     [HttpPost]
@@ -34,13 +62,13 @@ public class UserController : BaseController
         var user = new User
         {
             Age = userDto.Age,
-            FullName = userDto.FullName,
-            Gender = userDto.Gender,
             UserName = userDto.UserName,
-            Email = userDto.Email
+            Gender = userDto.Gender,
+            Email = userDto.Email,
+            Password =userDto.Password
         };
 
-        await userRepository.AddAsync(user, cancellationToken);
+        await userRepository.AddAsync(user, userDto.Password, cancellationToken);
     }
 
     [HttpPut]

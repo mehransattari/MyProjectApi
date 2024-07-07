@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebFramework.Filters;
 
 namespace WebFramework.Api;
@@ -7,6 +8,7 @@ namespace WebFramework.Api;
 [Route("api/[controller]")]
 [ApiResultFilter]
 [ServiceFilter(typeof(LogActionFilter))]
+//[Authorize(Roles = "Admin")]
 public class BaseController : ControllerBase
 {
 
