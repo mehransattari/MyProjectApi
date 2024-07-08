@@ -7,25 +7,15 @@ using System.ComponentModel.DataAnnotations;
 namespace Entittes;
 
 
-public class User :BaseEntity //IdentityUser<int>, IEntity
+public class User :IdentityUser<int>, IEntity
 {
-    public User()
-    {
-        SecurityStamp =  Guid.NewGuid();
-    }
-    public string UserName { get; set; } = string.Empty;
-
-    public string Email { get; set; }
-
-    public string Password { get; set; }
+    public string FullName { get; set; }
 
     public int Age { get; set; }
 
     public GenderType Gender { get; set; }
 
     public bool IsActive { get; set; } = true;
-
-    public Guid SecurityStamp { get; set; }
 
     public DateTimeOffset? LastLoginDate { get; set; }
 
@@ -36,11 +26,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        //builder.Property(x=>x.UserName) //for identity
-        //       .IsRequired()
-        //       .HasMaxLength(100);
+        builder.Property(x => x.UserName) //for identity
+               .IsRequired()
+               .HasMaxLength(100);
 
-        builder.Property(x => x.UserName)
+        builder.Property(x => x.FullName)
                .IsRequired()
                .HasMaxLength(100);
 

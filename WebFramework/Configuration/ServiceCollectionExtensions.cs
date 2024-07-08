@@ -59,7 +59,7 @@ public static class ServiceCollectionExtensions
         .AddDefaultTokenProviders();
     }
 
-    public static void AddServices(this IServiceCollection services)
+    public static void AddScopedServices(this IServiceCollection services)
     {
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository, UserRepository>();  
@@ -129,7 +129,7 @@ public static class ServiceCollectionExtensions
                 //زمانی که توکن ولیدیت میشه
                 OnTokenValidated = async context =>
                 {
-                    //var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
+                    var signInManager = context.HttpContext.RequestServices.GetRequiredService<SignInManager<User>>();
                     var userRepository = context.HttpContext.RequestServices.GetRequiredService<IUserRepository>();
 
                     var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
@@ -144,12 +144,12 @@ public static class ServiceCollectionExtensions
                     var userId = claimsIdentity.GetUserId<int>();
                     var user = await userRepository.GetByIdAsync(context.HttpContext.RequestAborted, userId);
 
-                    if (user.SecurityStamp != Guid.Parse(securityStamp))
-                        context.Fail("Token secuirty stamp is not valid.");
-
-                    //var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
-                    //if (validatedUser == null)
+                    //if (user.SecurityStamp != Guid.Parse(securityStamp))
                     //    context.Fail("Token secuirty stamp is not valid.");
+
+                    var validatedUser = await signInManager.ValidateSecurityStampAsync(context.Principal);
+                    if (validatedUser == null)
+                        context.Fail("Token secuirty stamp is not valid.");
 
                     if (!user.IsActive)
                         context.Fail("User is not active.");

@@ -20,7 +20,7 @@ public class UserRepository : Repository<User>, IUserRepository
     {
         var passHash = SecurityHelper.GetSha256Hash(password);  
         
-        var result = await Table.SingleOrDefaultAsync(x=>x.UserName == userName && x.Password == passHash, cancellationToken);   
+        var result = await Table.SingleOrDefaultAsync(x=>x.UserName == userName && x.PasswordHash == passHash, cancellationToken);   
     
         return result;
     }
@@ -32,13 +32,13 @@ public class UserRepository : Repository<User>, IUserRepository
             throw new BadRequestExceptions("نام کاربری تکراری است");
 
         var passHash = SecurityHelper.GetSha256Hash(password);
-        user.Password = passHash;
+        user.PasswordHash = passHash;
         await base.AddAsync(user, cancellationToken);
     }
 
     public  Task UpdateSecurityStampAsync(User user, CancellationToken cancellationToken)
     {
-        user.SecurityStamp = Guid.NewGuid();
+        user.SecurityStamp = Guid.NewGuid().ToString();
         return  UpdateAsync(user, cancellationToken);
     }
 
