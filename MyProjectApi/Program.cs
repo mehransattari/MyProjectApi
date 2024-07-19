@@ -10,33 +10,39 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
 
 builder.Host.UseSerilog();
 
+var Services = builder.Services;
+
 //Set SiteSettings and Use By IOptionsSnapshot<SiteSettings> settings in jwtService
-builder.Services.Configure<SiteSettings>(builder.Configuration.GetSection(nameof(SiteSettings)));
+Services.Configure<SiteSettings>(builder.Configuration.GetSection(nameof(SiteSettings)));
 
 var siteSettings = builder.Configuration.GetSection(nameof(SiteSettings)).Get<SiteSettings>()!;
 
 // Add services to the container.
 
-builder.Services.AddControllers(options =>
+Services.AddControllers(options =>
 {
     //AuthorizeFilter 
     options.Filters.Add(new AuthorizeFilter());
 });
 
-builder.Services.AddDbContext(builder.Configuration);
+Services.AddMongoServices(builder.Configuration);
 
-builder.Services.AddCustomIdentity(siteSettings.IdentitySettings);
+Services.AddDbContext(builder.Configuration);
 
-builder.Services.AddScopedServices();
+Services.AddCustomIdentity(siteSettings.IdentitySettings);
 
-builder.Services.AddAttributeServices();
+Services.AddScopedServices();
 
-builder.Services.AddJwtService(siteSettings.JwtSettings);
+Services.AddAttributeServices();
+
+Services.AddJwtService(siteSettings.JwtSettings);
 
 var app = builder.Build();
 
 app.UseCustomExceptionHandler();
+
 //app.UseExceptionHandler();
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

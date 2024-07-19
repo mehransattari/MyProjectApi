@@ -1,10 +1,12 @@
 ﻿using Common;
 using Common.Exceptions;
+using Common.MongoSettings;
 using Common.ResultStatus;
 using Common.Settings;
 using Common.Utilities;
 using Data.Context;
 using Data.Contracts;
+using Data.Mongo;
 using Data.Repositories;
 using Entittes;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -12,7 +14,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Services.Services;
 using System.Net;
 using System.Security.Claims;
@@ -182,6 +186,23 @@ public static class ServiceCollectionExtensions
             };
 
         });
+    }
+
+    public static void AddMongoServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        //Mongo Db
+        services.Configure<MongoSetting>(configuration.GetSection(nameof(MongoSetting)));
+      
+        services.AddSingleton(sp => sp.GetRequiredService<IOptions<MongoSetting>>().Value);
+       
+        services.AddSingleton<IMongoClient, MongoClient>(x =>
+        {
+            var mongoSetting = x.GetRequiredService<MongoSetting>();
+            return new MongoClient(mongoSetting.ConnectionStrings);
+       
+        });
+
+        services.AddScoped<IUserService, UserService>();
     }
 
 }
